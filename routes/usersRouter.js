@@ -2,7 +2,7 @@ const express=require('express')
 const router = express.Router();
 
 const {getUsers,getUser,createUser,updateUser,deleteUser}=require('../controllers/users')
-router.route('/').get(getUsers).post(createUser);
+router.route('/signup').get(getUsers).post(createUser);
 router.route('/:id').get(getUser).post(updateUser).post(deleteUser)
 
 module.exports=router;

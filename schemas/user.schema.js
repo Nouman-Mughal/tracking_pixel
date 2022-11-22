@@ -5,6 +5,7 @@ const addressSchema=require('./address.schema')
 
 const userSchema = new mongoose.Schema({
 
+
     username: {
         type: String, 
         trim:true,
@@ -19,7 +20,7 @@ const userSchema = new mongoose.Schema({
     },
     phone: {
         type: String, 
-        required: true ,
+        required: false,
         trim:true
     },
     password: {
@@ -29,7 +30,7 @@ const userSchema = new mongoose.Schema({
     },
     address:{
         type:addressSchema,
-        required:true
+        required:false
     }
   },
   {
