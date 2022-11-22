@@ -2,19 +2,20 @@ let { User } = require("../schemas/user.schema");
 
 const jwt=require('jsonwebtoken');
 
-exports.getUsers=('/',(req,res,next)=>{
-    res.json({success:true,msg:"Show all users"})
-    next()
-  });
  exports.getUser=("/login", async (req, res, next) => {
+    
     let { username,email, password } = req.body;
    
     let existingUser;
     try {
+
       existingUser = await User.findOne({ username:username,email: email });
+    
     } catch(err) {
+    
       const error = new Error(err);
       return next(error);
+    
     }
     if (!existingUser || existingUser.password != password) {
       const error = Error("Wrong details please check at once");
@@ -26,7 +27,7 @@ exports.getUsers=('/',(req,res,next)=>{
       token = jwt.sign(
         { userId: existingUser.id, email: existingUser.email },
         "secretkeyappearshere",
-        { expiresIn: "1h" }
+        { expiresIn: "14d" }
       );
     } catch (err) {
       console.log(err);
@@ -48,11 +49,7 @@ exports.getUsers=('/',(req,res,next)=>{
 
   exports.createUser=("/signup", async (req, res, next) => {
     const { username, email, password } = req.body;
-    const newUser = new User({
-      username,
-      email,
-      password,
-    });
+    const newUser = new User({ username, email,password,});
    
     try {
       await newUser.save();
@@ -65,7 +62,7 @@ exports.getUsers=('/',(req,res,next)=>{
       token = jwt.sign(
         { userId: newUser.id, email: newUser.email },
         "THisIsTheSuperSEcretkey",
-        { expiresIn: "1h" }
+        { expiresIn: "1d" }
       );
     } catch (err) {
       const error = new Error("Error! Something went wrong.");
@@ -82,13 +79,18 @@ exports.getUsers=('/',(req,res,next)=>{
   exports.updateUser= ('/:id',async (req,res)=>{
     
     res.status(201).json({success:true})
-    // next()
   });
-exports.deleteUser=('/:id',(req,res)=>{
-    res.status(200).json({success:true,msg:`deleted ${req.params.id}`})
-    // next()
-  });
+exports.deleteUser=('/logout',async (req,res)=>{
+    const authHeaders=req.headers['authorization']
+    jwt.sign(authHeaders,'', { expiresIn: 1 } , (logout, err) => {
+        if (logout) {
+        res.send({msg : 'You have been Logged Out' });
+        } else {
+        res.send({msg:'Error'});
+        }
+    })
+}); 
   
    
-  // Handling post request
+  
   
