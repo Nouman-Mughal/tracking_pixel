@@ -1,26 +1,23 @@
 let { User } = require("../models/schemas/user.schema");
-const bcrypt=require('bcrypt')
-require('dotenv').config()
+const bcrypt = require("bcrypt");
+require("dotenv").config();
 
+const jwt = require("jsonwebtoken");
 
-const jwt=require('jsonwebtoken');
+const getUser = async (req, res, next) => {
+  let { username, email, password } = req.body;
 
-const getUser=async (req, res, next) => {
-  
-  let { username,email, password } = req.body;
-  
   let existingUser;
   try {
-
-    existingUser = await User.findOne({ username:username,email: email });
-  
-  } catch(err) {
-  
+    existingUser = await User.findOne({ username: username, email: email });
+  } catch (err) {
     const error = new Error(err);
     return next(error);
-  
   }
-  if (!existingUser || (await bcrypt.compare(existingUser.password, password))) {
+  if (
+    !existingUser ||
+    (await bcrypt.compare(existingUser.password, password))
+  ) {
     const error = Error("Wrong details please check at once");
     return next(error);
   }
@@ -37,31 +34,30 @@ const getUser=async (req, res, next) => {
     const error = new Error(err);
     return next(error);
   }
-  
-  res
-    .status(200)
-    .json({
-      success: true,
-      data: {
-        userId: existingUser.id,
-        email: existingUser.email,
-        token: token,
-      },
-    });
+
+  res.status(200).json({
+    success: true,
+    data: {
+      userId: existingUser.id,
+      email: existingUser.email,
+      token: token,
+    },
+  });
 };
 
-const createUser= async (req, res, next) => {
-  
-  const { username, email, password,address } = req.body;
-  const encryptedPassword=await bcrypt.hash(password,10)
-  const newUser = new User({ username, 
-    email:email.toLowerCase(),
-    password:encryptedPassword,
-    address});
-  
+const createUser = async (req, res, next) => {
+  const { username, email, password, address } = req.body;
+  const encryptedPassword = await bcrypt.hash(password, 10);
+  const newUser = new User({
+    username,
+    email: email.toLowerCase(),
+    password: encryptedPassword,
+    address,
+  });
+
   try {
     await newUser.save();
-  } catch (err){
+  } catch (err) {
     const error = new Error(err);
     return next(error);
   }
@@ -76,37 +72,26 @@ const createUser= async (req, res, next) => {
     const error = new Error("Error! Something went wrong.");
     return next(error);
   }
-  res
-    .status(201)
-    .json({
-      success: true,
-      data: { userId: newUser.id,
-          email: newUser.email, token: token },
-    });
+  res.status(201).json({
+    success: true,
+    data: { userId: newUser.id, email: newUser.email, token: token },
+  });
 };
 
+const logoutUser = async (req, res) => {
+  const authHeaders = req.headers["authorization"];
 
-const logoutUser=async (req,res)=>{
+  jwt.sign(authHeaders, "", { expiresIn: 1 }, (logout, err) => {
+    if (logout) {
+      res.send({ msg: "You have been Logged Out" });
+    } else {
+      res.send({ msg: "Error" });
+    }
+  });
+};
 
-  const authHeaders=req.headers['authorization']
-    
-    jwt.sign(authHeaders,'', { expiresIn: 1 } , (logout, err) => {
-      if (logout) {
-        res.send({msg : 'You have been Logged Out' });
-      } else {
-        res.send({msg:'Error'});
-      }
-    })
-
-}; 
-
-
-module.exports={
+module.exports = {
   getUser,
   createUser,
-  logoutUser
-}
-  
-   
-  
-  
+  logoutUser,
+};
