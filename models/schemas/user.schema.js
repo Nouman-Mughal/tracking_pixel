@@ -30,7 +30,7 @@ const userSchema = new mongoose.Schema({
     },
     address:{
         type:addressSchema,
-        required:false
+        required:true
     }
   },
   {
